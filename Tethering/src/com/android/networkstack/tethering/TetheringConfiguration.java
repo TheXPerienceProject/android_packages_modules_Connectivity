@@ -370,10 +370,7 @@ public class TetheringConfiguration {
 
     /** Check whether dun is required. */
     public static boolean checkDunRequired(Context ctx) {
-        final TelephonyManager tm = (TelephonyManager) ctx.getSystemService(TELEPHONY_SERVICE);
-        // TelephonyManager would uses the active data subscription, which should be the one used
-        // by tethering.
-        return (tm != null) ? tm.isTetheringApnRequired() : false;
+        return false;
     }
 
     public int getOffloadPollInterval() {
