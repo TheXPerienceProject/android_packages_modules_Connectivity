@@ -27,6 +27,7 @@ import static android.net.NetworkCapabilities.TRANSPORT_WIFI_AWARE;
 
 import static com.android.server.ConnectivityServiceTestUtils.transportToLegacyType;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import static org.junit.Assert.assertEquals;
@@ -297,6 +298,10 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
     public void expectDisconnected(long timeoutMs) {
         assertTrue(mDisconnected.block(timeoutMs));
+    }
+
+    public void assertNotDisconnected(long timeoutMs) {
+        assertFalse(mDisconnected.block(timeoutMs));
     }
 
     public void sendLinkProperties(LinkProperties lp) {
