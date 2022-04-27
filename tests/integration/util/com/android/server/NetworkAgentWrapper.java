@@ -27,7 +27,6 @@ import static android.net.NetworkCapabilities.TRANSPORT_WIFI_AWARE;
 
 import static com.android.server.ConnectivityServiceTestUtils.transportToLegacyType;
 
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import static org.junit.Assert.assertEquals;
@@ -84,6 +83,12 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
     public NetworkAgentWrapper(int transport, LinkProperties linkProperties,
             NetworkCapabilities ncTemplate, Context context) throws Exception {
+        this(transport, linkProperties, ncTemplate, null /* provider */, context);
+    }
+
+    public NetworkAgentWrapper(int transport, LinkProperties linkProperties,
+            NetworkCapabilities ncTemplate, NetworkProvider provider,
+            Context context) throws Exception {
         final int type = transportToLegacyType(transport);
         final String typeName = ConnectivityManager.getNetworkTypeName(type);
         mNetworkCapabilities = (ncTemplate != null) ? ncTemplate : new NetworkCapabilities();
@@ -125,12 +130,12 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
                 .setLegacyTypeName(typeName)
                 .setLegacyExtraInfo(extraInfo)
                 .build();
-        mNetworkAgent = makeNetworkAgent(linkProperties, mNetworkAgentConfig);
+        mNetworkAgent = makeNetworkAgent(linkProperties, mNetworkAgentConfig, provider);
     }
 
     protected InstrumentedNetworkAgent makeNetworkAgent(LinkProperties linkProperties,
-            final NetworkAgentConfig nac) throws Exception {
-        return new InstrumentedNetworkAgent(this, linkProperties, nac);
+            final NetworkAgentConfig nac, NetworkProvider provider) throws Exception {
+        return new InstrumentedNetworkAgent(this, linkProperties, nac, provider);
     }
 
     public static class InstrumentedNetworkAgent extends NetworkAgent {
@@ -139,10 +144,15 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
         public InstrumentedNetworkAgent(NetworkAgentWrapper wrapper, LinkProperties lp,
                 NetworkAgentConfig nac) {
+            this(wrapper, lp, nac, null /* provider */);
+        }
+
+        public InstrumentedNetworkAgent(NetworkAgentWrapper wrapper, LinkProperties lp,
+                NetworkAgentConfig nac, NetworkProvider provider) {
             super(wrapper.mContext, wrapper.mHandlerThread.getLooper(), wrapper.mLogTag,
                     wrapper.mNetworkCapabilities, lp, wrapper.mScore, nac,
-                    new NetworkProvider(wrapper.mContext, wrapper.mHandlerThread.getLooper(),
-                            PROVIDER_NAME));
+                    null != provider ? provider : new NetworkProvider(wrapper.mContext,
+                            wrapper.mHandlerThread.getLooper(), PROVIDER_NAME));
             mWrapper = wrapper;
             register();
         }
@@ -298,10 +308,6 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
     public void expectDisconnected(long timeoutMs) {
         assertTrue(mDisconnected.block(timeoutMs));
-    }
-
-    public void assertNotDisconnected(long timeoutMs) {
-        assertFalse(mDisconnected.block(timeoutMs));
     }
 
     public void sendLinkProperties(LinkProperties lp) {
