@@ -1187,7 +1187,6 @@ public class NetworkAgentInfo implements Comparable<NetworkAgentInfo>, NetworkRa
                         ? " underlying{" + Arrays.toString(declaredUnderlyingNetworks) + "}" : "")
                 + "  lp{" + linkProperties + "}"
                 + "  nc{" + networkCapabilities + "}"
-                + "  factorySerialNumber=" + factorySerialNumber
                 + "}";
     }
 

@@ -42,8 +42,8 @@ import android.net.NetworkTemplate.SUBSCRIBER_ID_MATCH_RULE_EXACT
 import android.net.NetworkTemplate.WIFI_NETWORKID_ALL
 import android.net.NetworkTemplate.buildTemplateCarrierMetered
 import android.net.NetworkTemplate.buildTemplateMobileAll
-import android.net.NetworkTemplate.buildTemplateMobileWithRatType
 import android.net.NetworkTemplate.buildTemplateMobileWildcard
+import android.net.NetworkTemplate.buildTemplateMobileWithRatType
 import android.net.NetworkTemplate.buildTemplateWifi
 import android.net.NetworkTemplate.buildTemplateWifiWildcard
 import android.net.NetworkTemplate.normalize

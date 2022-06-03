@@ -83,12 +83,6 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
     public NetworkAgentWrapper(int transport, LinkProperties linkProperties,
             NetworkCapabilities ncTemplate, Context context) throws Exception {
-        this(transport, linkProperties, ncTemplate, null /* provider */, context);
-    }
-
-    public NetworkAgentWrapper(int transport, LinkProperties linkProperties,
-            NetworkCapabilities ncTemplate, NetworkProvider provider,
-            Context context) throws Exception {
         final int type = transportToLegacyType(transport);
         final String typeName = ConnectivityManager.getNetworkTypeName(type);
         mNetworkCapabilities = (ncTemplate != null) ? ncTemplate : new NetworkCapabilities();
@@ -130,12 +124,12 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
                 .setLegacyTypeName(typeName)
                 .setLegacyExtraInfo(extraInfo)
                 .build();
-        mNetworkAgent = makeNetworkAgent(linkProperties, mNetworkAgentConfig, provider);
+        mNetworkAgent = makeNetworkAgent(linkProperties, mNetworkAgentConfig);
     }
 
     protected InstrumentedNetworkAgent makeNetworkAgent(LinkProperties linkProperties,
-            final NetworkAgentConfig nac, NetworkProvider provider) throws Exception {
-        return new InstrumentedNetworkAgent(this, linkProperties, nac, provider);
+            final NetworkAgentConfig nac) throws Exception {
+        return new InstrumentedNetworkAgent(this, linkProperties, nac);
     }
 
     public static class InstrumentedNetworkAgent extends NetworkAgent {
@@ -144,15 +138,10 @@ public class NetworkAgentWrapper implements TestableNetworkCallback.HasNetwork {
 
         public InstrumentedNetworkAgent(NetworkAgentWrapper wrapper, LinkProperties lp,
                 NetworkAgentConfig nac) {
-            this(wrapper, lp, nac, null /* provider */);
-        }
-
-        public InstrumentedNetworkAgent(NetworkAgentWrapper wrapper, LinkProperties lp,
-                NetworkAgentConfig nac, NetworkProvider provider) {
             super(wrapper.mContext, wrapper.mHandlerThread.getLooper(), wrapper.mLogTag,
                     wrapper.mNetworkCapabilities, lp, wrapper.mScore, nac,
-                    null != provider ? provider : new NetworkProvider(wrapper.mContext,
-                            wrapper.mHandlerThread.getLooper(), PROVIDER_NAME));
+                    new NetworkProvider(wrapper.mContext, wrapper.mHandlerThread.getLooper(),
+                            PROVIDER_NAME));
             mWrapper = wrapper;
             register();
         }
