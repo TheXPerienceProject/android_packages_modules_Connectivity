@@ -24,6 +24,7 @@ import android.nearby.PresenceCredential;
 import com.android.internal.util.Preconditions;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,7 +42,7 @@ import java.util.List;
 // The header contains:
 // version (3 bits) | provision_mode_flag (1 bit) | identity_type (3 bits) |
 // extended_advertisement_mode (1 bit)
-public class FastAdvertisement extends Advertisement {
+public class FastAdvertisement {
 
     private static final int FAST_ADVERTISEMENT_MAX_LENGTH = 24;
 
@@ -84,8 +85,7 @@ public class FastAdvertisement extends Advertisement {
                 (byte) request.getTxPower());
     }
 
-    /** Serialize a {@link FastAdvertisement} object into bytes. */
-    @Override
+    /** Serialize an {@link FastAdvertisement} object into bytes. */
     public byte[] toBytes() {
         ByteBuffer buffer = ByteBuffer.allocate(getLength());
 
@@ -100,7 +100,17 @@ public class FastAdvertisement extends Advertisement {
         return buffer.array();
     }
 
+    private final int mLength;
+
     private final int mLtvFieldCount;
+
+    @PresenceCredential.IdentityType private final int mIdentityType;
+
+    private final byte[] mIdentity;
+
+    private final byte[] mSalt;
+
+    private final List<Integer> mActions;
 
     @Nullable
     private final Byte mTxPower;
@@ -111,7 +121,6 @@ public class FastAdvertisement extends Advertisement {
             byte[] salt,
             List<Integer> actions,
             @Nullable Byte txPower) {
-        this.mVersion = BroadcastRequest.PRESENCE_VERSION_V0;
         this.mIdentityType = identityType;
         this.mIdentity = identity;
         this.mSalt = salt;
@@ -134,10 +143,42 @@ public class FastAdvertisement extends Advertisement {
                 "FastAdvertisement exceeds maximum length");
     }
 
+    /** Returns the version in the advertisement. */
+    @BroadcastRequest.BroadcastVersion
+    public int getVersion() {
+        return BroadcastRequest.PRESENCE_VERSION_V0;
+    }
+
+    /** Returns the identity type in the advertisement. */
+    @PresenceCredential.IdentityType
+    public int getIdentityType() {
+        return mIdentityType;
+    }
+
+    /** Returns the identity bytes in the advertisement. */
+    public byte[] getIdentity() {
+        return mIdentity.clone();
+    }
+
+    /** Returns the salt of the advertisement. */
+    public byte[] getSalt() {
+        return mSalt.clone();
+    }
+
+    /** Returns the actions in the advertisement. */
+    public List<Integer> getActions() {
+        return new ArrayList<>(mActions);
+    }
+
     /** Returns the adjusted TX Power in the advertisement. Null if not available. */
     @Nullable
     public Byte getTxPower() {
         return mTxPower;
+    }
+
+    /** Returns the length of the advertisement. */
+    public int getLength() {
+        return mLength;
     }
 
     /** Returns the count of LTV fields in the advertisement. */

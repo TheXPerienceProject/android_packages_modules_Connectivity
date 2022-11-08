@@ -63,7 +63,6 @@ cc_library_headers {
 bpf {
     name: "block.o",
     srcs: ["block.c"],
-    btf: true,
     cflags: [
         "-Wall",
         "-Werror",
@@ -72,9 +71,8 @@ bpf {
 }
 
 bpf {
-    name: "dscpPolicy.o",
-    srcs: ["dscpPolicy.c"],
-    btf: true,
+    name: "dscp_policy.o",
+    srcs: ["dscp_policy.c"],
     cflags: [
         "-Wall",
         "-Werror",
@@ -103,7 +101,6 @@ bpf {
 bpf {
     name: "clatd.o",
     srcs: ["clatd.c"],
-    btf: true,
     cflags: [
         "-Wall",
         "-Werror",
@@ -115,7 +112,6 @@ bpf {
     // WARNING: Android T's non-updatable netd depends on 'netd' string for xt_bpf programs it loads
     name: "netd.o",
     srcs: ["netd.c"],
-    btf: true,
     cflags: [
         "-Wall",
         "-Werror",

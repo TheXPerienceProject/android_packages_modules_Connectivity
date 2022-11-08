@@ -110,8 +110,7 @@ public class Locator {
         throw new IllegalStateException(errorMessage);
     }
 
-    @VisibleForTesting
-    String getUnboundErrorMessage(Class<?> type) {
+    private String getUnboundErrorMessage(Class<?> type) {
         StringBuilder sb = new StringBuilder();
         sb.append("Unbound type: ").append(type.getName()).append("\n").append(
                 "Searched locators:\n");

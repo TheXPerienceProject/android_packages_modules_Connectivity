@@ -187,6 +187,12 @@ public class BluetoothDevice {
         return mWrappedBluetoothDevice.createInsecureRfcommSocketToServiceRecord(uuid);
     }
 
+    /** See {@link android.bluetooth.BluetoothDevice#setPin(byte[])}. */
+    @TargetApi(19)
+    public boolean setPairingConfirmation(byte[] pin) {
+        return mWrappedBluetoothDevice.setPin(pin);
+    }
+
     /** See {@link android.bluetooth.BluetoothDevice#setPairingConfirmation(boolean)}. */
     public boolean setPairingConfirmation(boolean confirm) {
         return mWrappedBluetoothDevice.setPairingConfirmation(confirm);

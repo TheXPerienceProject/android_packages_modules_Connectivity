@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.when;
 
-import android.bluetooth.le.ScanResult;
 import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -51,10 +50,6 @@ public class FastPairCacheManagerTest {
     DiscoveryItem mDiscoveryItem2;
     @Mock
     Cache.StoredFastPairItem mStoredFastPairItem;
-    @Mock
-    ScanResult mScanResult;
-
-    Context mContext;
     Cache.StoredDiscoveryItem mStoredDiscoveryItem = Cache.StoredDiscoveryItem.newBuilder()
             .setTriggerId(MODEL_ID)
             .setAppName(APP_NAME).build();
@@ -65,12 +60,12 @@ public class FastPairCacheManagerTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        mContext = ApplicationProvider.getApplicationContext();
     }
 
     @Test
     @SdkSuppress(minSdkVersion = 32, codeName = "T")
     public void notSaveRetrieveInfo() {
+        Context mContext = ApplicationProvider.getApplicationContext();
         when(mDiscoveryItem.getCopyOfStoredItem()).thenReturn(mStoredDiscoveryItem);
         when(mDiscoveryItem.getTriggerId()).thenReturn(MODEL_ID);
 
@@ -83,6 +78,20 @@ public class FastPairCacheManagerTest {
     @Test
     @SdkSuppress(minSdkVersion = 32, codeName = "T")
     public void saveRetrieveInfo() {
+        Context mContext = ApplicationProvider.getApplicationContext();
+        when(mDiscoveryItem.getCopyOfStoredItem()).thenReturn(mStoredDiscoveryItem);
+        when(mDiscoveryItem.getTriggerId()).thenReturn(MODEL_ID);
+
+        FastPairCacheManager fastPairCacheManager = new FastPairCacheManager(mContext);
+        fastPairCacheManager.saveDiscoveryItem(mDiscoveryItem);
+        assertThat(fastPairCacheManager.getStoredDiscoveryItem(MODEL_ID).getAppName())
+                .isEqualTo(APP_NAME);
+    }
+
+    @Test
+    @SdkSuppress(minSdkVersion = 32, codeName = "T")
+    public void getAllInfo() {
+        Context mContext = ApplicationProvider.getApplicationContext();
         when(mDiscoveryItem.getCopyOfStoredItem()).thenReturn(mStoredDiscoveryItem);
         when(mDiscoveryItem.getTriggerId()).thenReturn(MODEL_ID);
         when(mDiscoveryItem2.getCopyOfStoredItem()).thenReturn(mStoredDiscoveryItem2);
@@ -90,20 +99,18 @@ public class FastPairCacheManagerTest {
 
         FastPairCacheManager fastPairCacheManager = new FastPairCacheManager(mContext);
         fastPairCacheManager.saveDiscoveryItem(mDiscoveryItem);
-        assertThat(fastPairCacheManager.getStoredDiscoveryItem(MODEL_ID).getAppName())
-                .isEqualTo(APP_NAME);
-        assertThat(fastPairCacheManager.getAllSavedStoreDiscoveryItem()).hasSize(1);
+
+        assertThat(fastPairCacheManager.getAllSavedStoreDiscoveryItem()).hasSize(2);
 
         fastPairCacheManager.saveDiscoveryItem(mDiscoveryItem2);
-        assertThat(fastPairCacheManager.getStoredDiscoveryItem(MODEL_ID2).getAppName())
-                .isEqualTo(APP_NAME);
-        assertThat(fastPairCacheManager.getAllSavedStoreDiscoveryItem()).hasSize(2);
-        fastPairCacheManager.cleanUp();
+
+        assertThat(fastPairCacheManager.getAllSavedStoreDiscoveryItem()).hasSize(3);
     }
 
     @Test
     @SdkSuppress(minSdkVersion = 32, codeName = "T")
     public void saveRetrieveInfoStoredFastPairItem() {
+        Context mContext = ApplicationProvider.getApplicationContext();
         Cache.StoredFastPairItem storedFastPairItem = Cache.StoredFastPairItem.newBuilder()
                 .setMacAddress(MAC_ADDRESS)
                 .setAccountKey(ACCOUNT_KEY)
@@ -121,6 +128,7 @@ public class FastPairCacheManagerTest {
     @Test
     @SdkSuppress(minSdkVersion = 32, codeName = "T")
     public void checkGetAllFastPairItems() {
+        Context mContext = ApplicationProvider.getApplicationContext();
         Cache.StoredFastPairItem storedFastPairItem = Cache.StoredFastPairItem.newBuilder()
                 .setMacAddress(MAC_ADDRESS)
                 .setAccountKey(ACCOUNT_KEY)
@@ -141,15 +149,5 @@ public class FastPairCacheManagerTest {
 
         assertThat(fastPairCacheManager.getAllSavedStoredFastPairItem().size())
                 .isEqualTo(1);
-
-        fastPairCacheManager.cleanUp();
-    }
-
-    @Test
-    @SdkSuppress(minSdkVersion = 32, codeName = "T")
-    public void getDeviceFromScanResult_notCrash() {
-        FastPairCacheManager fastPairCacheManager = new FastPairCacheManager(mContext);
-        fastPairCacheManager.getDeviceFromScanResult(mScanResult);
-
     }
 }

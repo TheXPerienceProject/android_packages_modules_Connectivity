@@ -16,55 +16,31 @@
 
 package com.android.server.nearby.presence;
 
-import static com.android.server.nearby.NearbyService.TAG;
-
-import android.annotation.NonNull;
-import android.nearby.DataElement;
+import android.nearby.NearbyDevice;
 import android.nearby.NearbyDeviceParcelable;
 import android.nearby.PresenceDevice;
 import android.nearby.PresenceScanFilter;
 import android.nearby.PublicCredential;
-import android.util.ArraySet;
-import android.util.Log;
-
-import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 /** Represents a Presence discovery result. */
 public class PresenceDiscoveryResult {
 
     /** Creates a {@link PresenceDiscoveryResult} from the scan data. */
     public static PresenceDiscoveryResult fromDevice(NearbyDeviceParcelable device) {
-        PresenceDevice presenceDevice = device.getPresenceDevice();
-        if (presenceDevice != null) {
-            return new PresenceDiscoveryResult.Builder()
-                    .setTxPower(device.getTxPower())
-                    .setRssi(device.getRssi())
-                    .setSalt(presenceDevice.getSalt())
-                    .setPublicCredential(device.getPublicCredential())
-                    .addExtendedProperties(presenceDevice.getExtendedProperties())
-                    .setEncryptedIdentityTag(device.getEncryptionKeyTag())
-                    .build();
-        }
         byte[] salt = device.getSalt();
         if (salt == null) {
             salt = new byte[0];
         }
-
-        PresenceDiscoveryResult.Builder builder = new PresenceDiscoveryResult.Builder();
-        builder.setTxPower(device.getTxPower())
+        return new PresenceDiscoveryResult.Builder()
+                .setTxPower(device.getTxPower())
                 .setRssi(device.getRssi())
                 .setSalt(salt)
                 .addPresenceAction(device.getAction())
-                .setPublicCredential(device.getPublicCredential());
-        if (device.getPresenceDevice() != null) {
-            builder.addExtendedProperties(device.getPresenceDevice().getExtendedProperties());
-        }
-        return builder.build();
+                .setPublicCredential(device.getPublicCredential())
+                .build();
     }
 
     private final int mTxPower;
@@ -72,35 +48,25 @@ public class PresenceDiscoveryResult {
     private final byte[] mSalt;
     private final List<Integer> mPresenceActions;
     private final PublicCredential mPublicCredential;
-    private final List<DataElement> mExtendedProperties;
-    private final byte[] mEncryptedIdentityTag;
 
     private PresenceDiscoveryResult(
             int txPower,
             int rssi,
             byte[] salt,
             List<Integer> presenceActions,
-            PublicCredential publicCredential,
-            List<DataElement> extendedProperties,
-            byte[] encryptedIdentityTag) {
+            PublicCredential publicCredential) {
         mTxPower = txPower;
         mRssi = rssi;
         mSalt = salt;
         mPresenceActions = presenceActions;
         mPublicCredential = publicCredential;
-        mExtendedProperties = extendedProperties;
-        mEncryptedIdentityTag = encryptedIdentityTag;
     }
 
     /** Returns whether the discovery result matches the scan filter. */
     public boolean matches(PresenceScanFilter scanFilter) {
-        if (accountKeyMatches(scanFilter.getExtendedProperties())) {
-            return true;
-        }
-
         return pathLossMatches(scanFilter.getMaxPathLoss())
                 && actionMatches(scanFilter.getPresenceActions())
-                && identityMatches(scanFilter.getCredentials());
+                && credentialMatches(scanFilter.getCredentials());
     }
 
     private boolean pathLossMatches(int maxPathLoss) {
@@ -114,41 +80,21 @@ public class PresenceDiscoveryResult {
         return filterActions.stream().anyMatch(mPresenceActions::contains);
     }
 
-    @VisibleForTesting
-    boolean accountKeyMatches(List<DataElement> extendedProperties) {
-        Set<byte[]> accountKeys = new ArraySet<>();
-        for (DataElement requestedDe : mExtendedProperties) {
-            if (requestedDe.getKey() != DataElement.DataType.ACCOUNT_KEY_DATA) {
-                continue;
-            }
-            accountKeys.add(requestedDe.getValue());
-        }
-        for (DataElement scannedDe : extendedProperties) {
-            if (scannedDe.getKey() != DataElement.DataType.ACCOUNT_KEY_DATA) {
-                continue;
-            }
-            // If one account key matches, then returns true.
-            for (byte[] key : accountKeys) {
-                if (Arrays.equals(key, scannedDe.getValue())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+    private boolean credentialMatches(List<PublicCredential> credentials) {
+        return credentials.contains(mPublicCredential);
     }
 
-    private boolean identityMatches(List<PublicCredential> publicCredentials) {
-        if (mEncryptedIdentityTag.length == 0) {
-            return true;
-        }
-        for (PublicCredential publicCredential : publicCredentials) {
-            if (Arrays.equals(
-                    mEncryptedIdentityTag, publicCredential.getEncryptedMetadataKeyTag())) {
-                return true;
-            }
-        }
-        return false;
+    /** Converts a presence device from the discovery result. */
+    public PresenceDevice toPresenceDevice() {
+        return new PresenceDevice.Builder(
+                // Use the public credential hash as the device Id.
+                String.valueOf(mPublicCredential.hashCode()),
+                mSalt,
+                mPublicCredential.getSecretId(),
+                mPublicCredential.getEncryptedMetadata())
+                .setRssi(mRssi)
+                .addMedium(NearbyDevice.Medium.BLE)
+                .build();
     }
 
     /** Builder for {@link PresenceDiscoveryResult}. */
@@ -159,12 +105,9 @@ public class PresenceDiscoveryResult {
 
         private PublicCredential mPublicCredential;
         private final List<Integer> mPresenceActions;
-        private final List<DataElement> mExtendedProperties;
-        private byte[] mEncryptedIdentityTag = new byte[0];
 
         public Builder() {
             mPresenceActions = new ArrayList<>();
-            mExtendedProperties = new ArrayList<>();
         }
 
         /** Sets the calibrated tx power for the discovery result. */
@@ -187,18 +130,7 @@ public class PresenceDiscoveryResult {
 
         /** Sets the public credential for the discovery result. */
         public Builder setPublicCredential(PublicCredential publicCredential) {
-            if (publicCredential != null) {
-                mPublicCredential = publicCredential;
-            }
-            return this;
-        }
-
-        /** Sets the encrypted identity tag for the discovery result. Usually it is passed from
-         * {@link NearbyDeviceParcelable} and the tag is calculated with authenticity key when
-         * receiving an advertisement.
-         */
-        public Builder setEncryptedIdentityTag(byte[] encryptedIdentityTag) {
-            mEncryptedIdentityTag = encryptedIdentityTag;
+            mPublicCredential = publicCredential;
             return this;
         }
 
@@ -208,34 +140,10 @@ public class PresenceDiscoveryResult {
             return this;
         }
 
-        /** Adds presence {@link DataElement}s of the discovery result. */
-        public Builder addExtendedProperties(DataElement dataElement) {
-            if (dataElement.getKey() == DataElement.DataType.ACTION) {
-                byte[] value = dataElement.getValue();
-                if (value.length == 1) {
-                    addPresenceAction(Byte.toUnsignedInt(value[0]));
-                } else {
-                    Log.e(TAG, "invalid action data element");
-                }
-            } else {
-                mExtendedProperties.add(dataElement);
-            }
-            return this;
-        }
-
-        /** Adds presence {@link DataElement}s of the discovery result. */
-        public Builder addExtendedProperties(@NonNull List<DataElement> dataElements) {
-            for (DataElement dataElement : dataElements) {
-                addExtendedProperties(dataElement);
-            }
-            return this;
-        }
-
         /** Builds a {@link PresenceDiscoveryResult}. */
         public PresenceDiscoveryResult build() {
             return new PresenceDiscoveryResult(
-                    mTxPower, mRssi, mSalt, mPresenceActions,
-                    mPublicCredential, mExtendedProperties, mEncryptedIdentityTag);
+                    mTxPower, mRssi, mSalt, mPresenceActions, mPublicCredential);
         }
     }
 }

@@ -118,12 +118,23 @@ public class NearbyManager {
         }
 
         if (scanType == ScanRequest.SCAN_TYPE_NEARBY_PRESENCE) {
-            PresenceDevice presenceDevice = nearbyDeviceParcelable.getPresenceDevice();
-            if (presenceDevice == null) {
-                Log.e(TAG,
-                        "Cannot find any Presence device in discovered NearbyDeviceParcelable");
+            PublicCredential publicCredential = nearbyDeviceParcelable.getPublicCredential();
+            if (publicCredential == null) {
+                return null;
             }
-            return presenceDevice;
+            byte[] salt = nearbyDeviceParcelable.getSalt();
+            if (salt == null) {
+                salt = new byte[0];
+            }
+            return new PresenceDevice.Builder(
+                    // Use the public credential hash as the device Id.
+                    String.valueOf(publicCredential.hashCode()),
+                    salt,
+                    publicCredential.getSecretId(),
+                    publicCredential.getEncryptedMetadata())
+                    .setRssi(nearbyDeviceParcelable.getRssi())
+                    .addMedium(nearbyDeviceParcelable.getMedium())
+                    .build();
         }
         return null;
     }

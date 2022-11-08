@@ -133,11 +133,14 @@ public class Event implements Parcelable {
             Event that = (Event) o;
             return this.mEventCode == that.getEventCode()
                     && this.mTimestamp == that.getTimestamp()
-                    && (this.mBluetoothDevice == null
-                    ? that.getBluetoothDevice() == null :
-                    this.mBluetoothDevice.equals(that.getBluetoothDevice()))
                     && (this.mProfile == null
-                    ? that.getProfile() == null : this.mProfile.equals(that.getProfile()));
+                        ? that.getProfile() == null : this.mProfile.equals(that.getProfile()))
+                    && (this.mBluetoothDevice == null
+                        ? that.getBluetoothDevice() == null :
+                            this.mBluetoothDevice.equals(that.getBluetoothDevice()))
+                    && (this.mException == null
+                        ?  that.getException() == null :
+                            this.mException.equals(that.getException()));
         }
         return false;
     }
@@ -146,6 +149,7 @@ public class Event implements Parcelable {
     public int hashCode() {
         return Objects.hash(mEventCode, mTimestamp, mProfile, mBluetoothDevice, mException);
     }
+
 
     /**
      * Builder

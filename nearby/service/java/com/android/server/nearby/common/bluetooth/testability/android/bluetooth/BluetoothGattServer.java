@@ -51,11 +51,6 @@ public class BluetoothGattServer {
         return new BluetoothGattServer(instance);
     }
 
-    /** Unwraps a Bluetooth Gatt server. */
-    public android.bluetooth.BluetoothGattServer unwrap() {
-        return mWrappedInstance;
-    }
-
     /**
      * See {@link android.bluetooth.BluetoothGattServer#connect(
      * android.bluetooth.BluetoothDevice, boolean)}

@@ -27,7 +27,6 @@ import android.hardware.location.NanoAppMessage;
 import android.hardware.location.NanoAppState;
 import android.util.Log;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.nearby.injector.ContextHubManagerAdapter;
 import com.android.server.nearby.injector.Injector;
 
@@ -92,7 +91,7 @@ public class ChreCommunication extends ContextHubClientCallback {
             Log.e(TAG, "ContexHub not available in this device");
             return;
         } else {
-            Log.i(TAG, "[ChreCommunication] Start ChreCommunication");
+            Log.i(TAG, "Start ChreCommunication");
         }
         Preconditions.checkNotNull(callback);
         Preconditions.checkArgument(!nanoAppIds.isEmpty());
@@ -173,8 +172,7 @@ public class ChreCommunication extends ContextHubClientCallback {
         mCallback.onNanoAppRestart(nanoAppId);
     }
 
-    @VisibleForTesting
-    static String contextHubTransactionResultToString(int result) {
+    private static String contextHubTransactionResultToString(int result) {
         switch (result) {
             case ContextHubTransaction.RESULT_SUCCESS:
                 return "RESULT_SUCCESS";

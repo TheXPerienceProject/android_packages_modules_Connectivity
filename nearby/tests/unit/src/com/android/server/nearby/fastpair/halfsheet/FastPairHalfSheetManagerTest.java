@@ -16,8 +16,6 @@
 
 package com.android.server.nearby.fastpair.halfsheet;
 
-import static com.google.common.truth.Truth.assertThat;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,15 +25,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.UserHandle;
-
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.server.nearby.common.locator.Locator;
 import com.android.server.nearby.common.locator.LocatorContextWrapper;
@@ -55,12 +50,12 @@ import service.proto.Cache;
 public class FastPairHalfSheetManagerTest {
     private static final String BLEADDRESS = "11:22:44:66";
     private static final String NAME = "device_name";
-    private static final int PASSKEY = 1234;
     private FastPairHalfSheetManager mFastPairHalfSheetManager;
     private Cache.ScanFastPairStoreItem mScanFastPairStoreItem;
-    @Mock private Context mContext;
     @Mock
     LocatorContextWrapper mContextWrapper;
+    @Mock
+    ResolveInfo mResolveInfo;
     @Mock
     PackageManager mPackageManager;
     @Mock
@@ -71,8 +66,7 @@ public class FastPairHalfSheetManagerTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        when(mContext.getContentResolver()).thenReturn(
-                InstrumentationRegistry.getInstrumentation().getContext().getContentResolver());
+
         mScanFastPairStoreItem = Cache.ScanFastPairStoreItem.newBuilder()
                 .setAddress(BLEADDRESS)
                 .setDeviceName(NAME)
@@ -138,25 +132,5 @@ public class FastPairHalfSheetManagerTest {
 
         verify(mContextWrapper, never())
                 .startActivityAsUser(intentArgumentCaptor.capture(), eq(UserHandle.CURRENT));
-    }
-
-    @Test
-    public void getHalfSheetForegroundState() {
-        mFastPairHalfSheetManager =
-                new FastPairHalfSheetManager(mContextWrapper);
-        assertThat(mFastPairHalfSheetManager.getHalfSheetForegroundState()).isTrue();
-    }
-
-    @Test
-    public void testEmptyMethods() {
-        mFastPairHalfSheetManager =
-                new FastPairHalfSheetManager(mContextWrapper);
-        mFastPairHalfSheetManager.destroyBluetoothPairController();
-        mFastPairHalfSheetManager.disableDismissRunnable();
-        mFastPairHalfSheetManager.notifyPairingProcessDone(true, BLEADDRESS, null);
-        mFastPairHalfSheetManager.showPairingFailed();
-        mFastPairHalfSheetManager.showPairingHalfSheet(null);
-        mFastPairHalfSheetManager.showPairingSuccessHalfSheet(BLEADDRESS);
-        mFastPairHalfSheetManager.showPasskeyConfirmation(null, PASSKEY);
     }
 }

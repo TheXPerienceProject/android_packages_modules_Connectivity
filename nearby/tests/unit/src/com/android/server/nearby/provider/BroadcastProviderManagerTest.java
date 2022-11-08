@@ -101,13 +101,8 @@ public class BroadcastProviderManagerTest {
     @Test
     public void testStartAdvertising() {
         mBroadcastProviderManager.startBroadcast(mBroadcastRequest, mBroadcastListener);
-        verify(mBleBroadcastProvider).start(eq(BroadcastRequest.PRESENCE_VERSION_V0),
-                any(byte[].class), any(BleBroadcastProvider.BroadcastListener.class));
-    }
-
-    @Test
-    public void testStopAdvertising() {
-        mBroadcastProviderManager.stopBroadcast(mBroadcastListener);
+        verify(mBleBroadcastProvider).start(any(byte[].class), any(
+                BleBroadcastProvider.BroadcastListener.class));
     }
 
     @Test

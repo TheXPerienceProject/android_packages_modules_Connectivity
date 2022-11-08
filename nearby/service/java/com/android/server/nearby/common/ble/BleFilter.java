@@ -500,16 +500,16 @@ public final class BleFilter implements Parcelable {
             return false;
         }
         BleFilter other = (BleFilter) obj;
-        return equal(mDeviceName, other.mDeviceName)
-                && equal(mDeviceAddress, other.mDeviceAddress)
+        return mDeviceName.equals(other.mDeviceName)
+                && mDeviceAddress.equals(other.mDeviceAddress)
                 && mManufacturerId == other.mManufacturerId
                 && Arrays.equals(mManufacturerData, other.mManufacturerData)
                 && Arrays.equals(mManufacturerDataMask, other.mManufacturerDataMask)
-                && equal(mServiceDataUuid, other.mServiceDataUuid)
+                && mServiceDataUuid.equals(other.mServiceDataUuid)
                 && Arrays.equals(mServiceData, other.mServiceData)
                 && Arrays.equals(mServiceDataMask, other.mServiceDataMask)
-                && equal(mServiceUuid, other.mServiceUuid)
-                && equal(mServiceUuidMask, other.mServiceUuidMask);
+                && mServiceUuid.equals(other.mServiceUuid)
+                && mServiceUuidMask.equals(other.mServiceUuidMask);
     }
 
     /** Builder class for {@link BleFilter}. */
@@ -742,12 +742,5 @@ public final class BleFilter implements Parcelable {
             }
         }
         return osFilterBuilder.build();
-    }
-
-    /**
-     * equal() method for two possibly-null objects
-     */
-    private static boolean equal(@Nullable Object obj1, @Nullable Object obj2) {
-        return obj1 == obj2 || (obj1 != null && obj1.equals(obj2));
     }
 }

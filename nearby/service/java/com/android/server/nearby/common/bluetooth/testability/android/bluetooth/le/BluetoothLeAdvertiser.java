@@ -71,10 +71,4 @@ public class BluetoothLeAdvertiser {
         }
         return new BluetoothLeAdvertiser(bluetoothLeAdvertiser);
     }
-
-    /** Unwraps a Bluetooth LE advertiser. */
-    @Nullable
-    public android.bluetooth.le.BluetoothLeAdvertiser unwrap() {
-        return mWrappedInstance;
-    }
 }
