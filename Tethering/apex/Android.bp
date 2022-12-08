@@ -71,7 +71,7 @@ apex {
     bpfs: [
         "block.o",
         "clatd.o",
-        "dscp_policy.o",
+        "dscpPolicy.o",
         "netd.o",
         "offload.o",
         "test.o",
@@ -186,6 +186,12 @@ override_apex {
     base: "com.android.tethering",
     package_name: "com.android.tethering.inprocess",
     enabled: enable_tethering_next_apex,
+    bpfs: [
+        "block.o",
+        "clatd.o",
+        "dscpPolicy.o",
+        "netd.o",
+    ],
     apps: [
         "ServiceConnectivityResources",
         "InProcessTethering",
