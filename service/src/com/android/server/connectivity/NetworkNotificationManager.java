@@ -168,8 +168,16 @@ public class NetworkNotificationManager {
                     .getVenueFriendlyName())) {
                 name = nai.linkProperties.getCaptivePortalData().getVenueFriendlyName();
             } else {
-                name = TextUtils.isEmpty(extraInfo)
-                        ? WifiInfo.sanitizeSsid(nai.networkCapabilities.getSsid()) : extraInfo;
+                if (!TextUtils.isEmpty(extraInfo)) {
+                    name = extraInfo;
+                } else {
+                    String ssid = nai.networkCapabilities.getSsid();
+                    if (!TextUtils.isEmpty(ssid) && ssid.startsWith("\"")) {
+                        name = WifiInfo.sanitizeSsid(ssid);
+                    } else {
+                        name = "";
+                    }
+                }
             }
             // Only notify for Internet-capable networks.
             if (!nai.networkCapabilities.hasCapability(NET_CAPABILITY_INTERNET)) return;
@@ -214,13 +222,21 @@ public class NetworkNotificationManager {
         }
         if ((notifyType == NotificationType.NO_INTERNET || showAsNoInternet)
                 && transportType == TRANSPORT_WIFI) {
-            title = r.getString(R.string.wifi_no_internet, name);
+            if (!TextUtils.isEmpty(name)) {
+                title = r.getString(R.string.wifi_no_internet, name);
+            } else {
+                title = r.getString(R.string.wifi_no_internet_no_network_name);
+            }
             details = r.getString(R.string.wifi_no_internet_detailed);
         } else if (notifyType == NotificationType.PRIVATE_DNS_BROKEN) {
             if (transportType == TRANSPORT_CELLULAR) {
                 title = r.getString(R.string.mobile_no_internet);
             } else if (transportType == TRANSPORT_WIFI) {
-                title = r.getString(R.string.wifi_no_internet, name);
+                if (!TextUtils.isEmpty(name)) {
+                    title = r.getString(R.string.wifi_no_internet, name);
+                } else {
+                    title = r.getString(R.string.wifi_no_internet_no_network_name);
+                }
             } else {
                 title = r.getString(R.string.other_networks_no_internet);
             }
@@ -231,7 +247,11 @@ public class NetworkNotificationManager {
             details = r.getString(R.string.network_partial_connectivity_detailed);
         } else if (notifyType == NotificationType.LOST_INTERNET &&
                 transportType == TRANSPORT_WIFI) {
-            title = r.getString(R.string.wifi_no_internet, name);
+            if (!TextUtils.isEmpty(name)) {
+                title = r.getString(R.string.wifi_no_internet, name);
+            } else {
+                title = r.getString(R.string.wifi_no_internet_no_network_name);
+            }
             details = r.getString(R.string.wifi_no_internet_detailed);
         } else if (notifyType == NotificationType.SIGN_IN) {
             switch (transportType) {
