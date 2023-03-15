@@ -56,7 +56,9 @@ public class DiscoveryProviderManager implements AbstractDiscoveryProvider.Liste
     protected final Object mLock = new Object();
     private final Context mContext;
     private final BleDiscoveryProvider mBleDiscoveryProvider;
-    @Nullable private final ChreDiscoveryProvider mChreDiscoveryProvider;
+    @VisibleForTesting
+    @Nullable
+    final ChreDiscoveryProvider mChreDiscoveryProvider;
     private @ScanRequest.ScanMode int mScanMode;
     private final Injector mInjector;
 
@@ -331,7 +333,8 @@ public class DiscoveryProviderManager implements AbstractDiscoveryProvider.Liste
         mBleDiscoveryProvider.getController().stop();
     }
 
-    private void stopChreProvider() {
+    @VisibleForTesting
+    protected void stopChreProvider() {
         mChreDiscoveryProvider.getController().stop();
     }
 
