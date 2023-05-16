@@ -173,12 +173,11 @@ public class DiscoveryProviderManager implements AbstractDiscoveryProvider.Liste
             }
             ScanListenerRecord scanListenerRecord =
                     new ScanListenerRecord(scanRequest, listener, callerIdentity, deathRecipient);
-            mScanTypeScanListenerRecordMap.put(listenerBinder, scanListenerRecord);
 
             if (!startProviders(scanRequest)) {
                 return false;
             }
-
+            mScanTypeScanListenerRecordMap.put(listenerBinder, scanListenerRecord);
             NearbyMetrics.logScanStarted(scanListenerRecord.hashCode(), scanRequest);
             if (mScanMode < scanRequest.getScanMode()) {
                 mScanMode = scanRequest.getScanMode();
